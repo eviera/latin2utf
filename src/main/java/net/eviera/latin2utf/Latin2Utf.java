@@ -14,11 +14,27 @@ public class Latin2Utf {
 
     private static final Logger log = Logger.getLogger(Latin2Utf.class.getName());
 
-    private Map<Byte, byte[]> conversionTable;
+    private Map<Byte, byte[]> conversionDict;
 
     public Latin2Utf() {
-        conversionTable = new HashMap<Byte, byte[]>();
-        conversionTable.put((byte) 0xE1, new byte[] {(byte) 0xC3, (byte) 0xA1});
+        populateConversionDictionary();
+    }
+
+    private void populateConversionDictionary() {
+        conversionDict = new HashMap<Byte, byte[]>();
+
+        // http://www.fileformat.info/info/unicode/category/Ll/list.htm
+        // https://es.wikipedia.org/wiki/ISO_8859-1
+
+        int[] conversionLookup = {
+                //minusculas acentuadas
+                0xE1,   0xC3,0xA1,      //LATIN SMALL LETTER A WITH ACUTE
+                0xE9,   0xC3,0x09,      //LATIN SMALL LETTER E WITH ACUTE
+        };
+
+        for (int i=0; i < conversionLookup.length; i++) {
+            conversionDict.put((byte)conversionLookup[i], new byte[] {(byte) conversionLookup[++i], (byte) conversionLookup[++i]});
+        }
     }
 
     public void converFile(File inFile) {
@@ -38,7 +54,7 @@ public class Latin2Utf {
         for (byte b : inBytes) {
             if ((b & 0xFF) > 0x7F) {
                 System.out.printf("b=%X  ", b);
-                byte[] conversion = conversionTable.get(b);
+                byte[] conversion = conversionDict.get(b);
                 System.out.printf("conv=%X%X", conversion[0], conversion[1]);
                 bos.write(conversion);
             } else {
