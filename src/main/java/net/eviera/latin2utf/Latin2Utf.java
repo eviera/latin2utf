@@ -29,7 +29,8 @@ public class Latin2Utf {
         int[] conversionLookup = {
                 //minusculas acentuadas
                 0xE1,   0xC3,0xA1,      //LATIN SMALL LETTER A WITH ACUTE
-                0xE9,   0xC3,0x09,      //LATIN SMALL LETTER E WITH ACUTE
+                0xE9,   0xC3,0xA9,      //LATIN SMALL LETTER E WITH ACUTE
+                0xED,   0xC3,0xAD,      //LATIN SMALL LETTER I WITH ACUTE
         };
 
         for (int i=0; i < conversionLookup.length; i++) {
@@ -53,14 +54,14 @@ public class Latin2Utf {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         for (byte b : inBytes) {
             if ((b & 0xFF) > 0x7F) {
-                System.out.printf("b=%X  ", b);
                 byte[] conversion = conversionDict.get(b);
-                System.out.printf("conv=%X%X", conversion[0], conversion[1]);
+                if (conversion == null) {
+                    throw new RuntimeException("No hay conversion para el byte [" + (b & 0xFF) + "]");
+                }
                 bos.write(conversion);
             } else {
                 bos.write(b);
             }
-
         }
         bos.close();
         return bos.toByteArray();
